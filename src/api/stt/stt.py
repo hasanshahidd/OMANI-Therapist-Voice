@@ -11,6 +11,7 @@ def transcribe_audio(audio_file="output.wav"):
     try:
         logger.info("Starting STT transcription...")
         audio_path = os.path.join("src", "utils", audio_file)
+ # Looks in current working directory
         if not os.path.exists(audio_path):
             logger.error(f"Audio file not found: {audio_path}")
             raise FileNotFoundError(f"Audio file not found: {audio_path}")
