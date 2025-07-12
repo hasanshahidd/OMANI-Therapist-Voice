@@ -1,181 +1,170 @@
+<!-- File: docs/architecture/overview.html -->
+
 <h1 align="center">🏛️ Architecture Overview — OMANI‑Therapist‑Voice</h1>
 
+<hr>
 
+<h2>🧠 System Design</h2>
+<p>
+  OMANI‑Therapist‑Voice is a Flask‑based web application engineered to deliver culturally sensitive mental health support in Omani Arabic.<br>
+  It processes user audio through a modular, multi‑stage pipeline:
+</p>
+<ol>
+  <li>🎤 Speech‑to‑Text (STT)</li>
+  <li>🛡 Safety Assessment</li>
+  <li>😔 Emotion Detection</li>
+  <li>💬 Therapy Generation</li>
+  <li>🔊 Text‑to‑Speech (TTS)</li>
+</ol>
+<p>
+  Designed for maintainability and scalability, the architecture separates logic into distinct folders (<code>agents</code>, <code>api</code>, <code>utils</code>) with full logging and real‑time performance monitoring.<br>
+  The app runs at <a href="http://127.0.0.1:5000">http://127.0.0.1:5000</a> or offline via script. Docker provides deployment flexibility.
+</p>
 
----
+<hr>
 
-## 🧠 System Design
+<h2>🔑 Key Components</h2>
 
-OMANI-Therapist-Voice is a Flask-based web application engineered to deliver culturally sensitive mental health support in Omani Arabic.  
-It processes user audio through a modular, multi-stage pipeline:
+<h3>🖥 Web Interface</h3>
+<ul>
+  <li><strong>File:</strong> <code>src/ui/app.py</code></li>
+  <li><strong>Role:</strong> Serves <code>index.html</code>, accepts audio via POST, converts WebM to WAV using <code>pydub</code>, invokes all pipeline stages.</li>
+  <li><strong>Notes:</strong> Streams final audio with <code>send_file</code>. Supports <code>lang=ar</code> / <code>lang=en</code>.</li>
+  <li><strong>Logging:</strong> Integrated via <code>src/utils/logger.py</code>, with 500‑error handling.</li>
+</ul>
 
-1. 🎤 Speech-to-Text (STT)  
-2. 🛡 Safety Assessment  
-3. 😔 Emotion Detection  
-4. 💬 Therapy Generation  
-5. 🔊 Text-to-Speech (TTS)
+<h3>🎧 Speech‑to‑Text (STT)</h3>
+<ul>
+  <li><strong>File:</strong> <code>src/api/stt/stt.py</code></li>
+  <li><strong>Role:</strong> Azure Speech SDK transcribes <code>src/utils/output.wav</code>.</li>
+  <li><strong>Mocking:</strong> Includes <code>mock_transcript.txt</code> for tests.</li>
+  <li><strong>Config:</strong> Credentials from <code>src/api/config/azure_config.json</code>.</li>
+  <li><strong>Settings:</strong> 16 kHz mono WAV, optimized for Arabic.</li>
+  <li><strong>Log Ref.:</strong> “Lahola lahola ولا قوة؟” @ 12:31:09,823</li>
+</ul>
 
-Designed for maintainability and scalability, the architecture separates logic into distinct folders (`agents`, `api`, `utils`) with full logging and real-time performance monitoring. The app runs via `http://127.0.0.1:5000` or offline via script. Docker is used for deployment flexibility.
+<h3>🛡 Safety Assessment</h3>
+<ul>
+  <li><strong>File:</strong> <code>src/agents/safety/safety_agent.py</code></li>
+  <li><strong>Role:</strong> Flags harmful/crisis content via <code>normalize_arabic_text()</code>.</li>
+  <li><strong>Preproc.:</strong> <code>src/utils/text_normalization.py</code> handles Arabic variants.</li>
+  <li><strong>Log Ref.:</strong> 12:31:10,252</li>
+</ul>
 
----
+<h3>😔 Emotion Detection</h3>
+<ul>
+  <li><strong>File:</strong> <code>src/agents/emotion/emotion_agent.py</code></li>
+  <li><strong>Models:</strong>
+    <ul>
+      <li>Base HF model → <code>models/arabic_emotion_model/</code></li>
+      <li>Fine‑tuned Omani → <code>models/emotion_finetuned/</code></li>
+    </ul>
+  </li>
+  <li><strong>Data:</strong> <code>data/mental_health_phrases.csv</code></li>
+  <li><strong>Detection:</strong> Chooses highest‑confidence emotion (“sadness” @ 0.99 @ 12:31:14,769)</li>
+  <li><strong>Script:</strong> <code>fine_tune_emotion.py</code></li>
+  <li><strong>Tests:</strong> <code>tests/unit/test_emotion_agent.py</code></li>
+</ul>
 
-## 🔑 Key Components
+<h3>💬 Therapy Generation</h3>
+<ul>
+  <li><strong>File:</strong> <code>src/agents/therapy/therapy_agent.py</code></li>
+  <li><strong>LLM:</strong> Groq for CBT‑style responses.</li>
+  <li><strong>Prompts:</strong> Omani phrases from <code>src/utils/cultural_embeddings.py</code> (“الصبر مفتاح الفرج”).</li>
+  <li><strong>Validation:</strong> Ensures cultural alignment.</li>
+  <li><strong>Log Ref.:</strong> 12:31:14,882</li>
+</ul>
 
-### 🖥 Web Interface
+<h3>🔊 Text‑to‑Speech (TTS)</h3>
+<ul>
+  <li><strong>File:</strong> <code>src/api/tts/tts.py</code></li>
+  <li><strong>Role:</strong> Azure TTS converts therapy text to <code>src/utils/output_tts.wav</code>.</li>
+  <li><strong>Voices:</strong> Omani Arabic; disabled in crisis cases.</li>
+  <li><strong>Log Ref.:</strong> 12:31:15,637</li>
+</ul>
 
-- **File**: `src/ui/app.py`  
-- **Role**: Serves `index.html`, accepts audio via POST, converts WebM to WAV using `pydub`, calls all pipeline stages.  
-- **Notes**: Streams final audio with `send_file`. Supports `lang=ar` / `lang=en`.  
-- **Logging**: Integrated via `src/utils/logger.py`. 500 error handling included.
+<h3>⚙️ Utilities</h3>
+<ul>
+  <li><strong>Logger:</strong> <code>src/utils/logger.py</code> → unified logs (<code>pipeline.log</code>).</li>
+  <li><strong>Monitoring:</strong> <code>src/utils/monitoring.py</code> → stage latency & success rates.</li>
+  <li><strong>Voice Capture:</strong> <code>src/utils/voice_capture.py</code> → WebM→WAV.</li>
+  <li><strong>Normalization:</strong> <code>src/utils/text_normalization.py</code>.</li>
+  <li><strong>Tokenization:</strong> <code>src/utils/tokenization.py</code>.</li>
+</ul>
 
----
+<hr>
 
-### 🎧 Speech-to-Text (STT)
+<h2>📦 Deployment</h2>
+<pre><code>docker build -t omani-therapist-voice infra/docker/Dockerfile .
+docker run -p 5000:5000 omani-therapist-voice
+</code></pre>
 
-- **File**: `src/api/stt/stt.py`  
-- **Role**: Uses Azure Speech SDK to transcribe `src/utils/output.wav`.  
-- **Mocking**: Includes `mock_transcript.txt` for testing.  
-- **Config**: Reads credentials from `src/api/config/azure_config.json`.  
-- **Settings**: Input is 16kHz mono WAV, optimized for Arabic.  
-- **Log Reference**: "Lahola lahola ولا قوة؟" (12:31:09,823)
+<hr>
 
----
+<h2>⚙️ Technical Specifications</h2>
+<ul>
+  <li>Python 3.9+</li>
+  <li>Flask, transformers, langchain‑groq, pydub, azure‑cognitiveservices‑speech</li>
+  <li>Models: HF BERT (Arabic), Groq LLM</li>
+  <li>Latency < 20 s (monitored)</li>
+</ul>
 
-### 🛡 Safety Assessment
+<hr>
 
-- **File**: `src/agents/safety/safety_agent.py`  
-- **Role**: Analyzes transcripts for harmful or crisis-related content.  
-- **Preprocessing**: Uses `src/utils/text_normalization.py` to handle Arabic variants.  
-- **Logic**: Uses keyword/contextual rules to flag high-risk messages.  
-- **Log Reference**: 12:31:10,252
-
----
-
-### 😔 Emotion Detection
-
-- **File**: `src/agents/emotion/emotion_agent.py`  
-- **Models**: 
-  - Base HuggingFace model → `models/arabic_emotion_model/`  
-  - Fine-tuned Omani model → `models/emotion_finetuned/`  
-- **Training Data**: `data/mental_health_phrases.csv`  
-- **Detection**: Chooses emotion with highest confidence.  
-- **Log Reference**: "sadness" at 0.99 confidence (12:31:14,769)  
-- **Training Script**: `fine_tune_emotion.py`  
-- **Unit Tests**: `tests/unit/test_emotion_agent.py`
-
----
-
-### 💬 Therapy Generation
-
-- **File**: `src/agents/therapy/therapy_agent.py`  
-- **LLM**: Uses Groq LLM to generate CBT-style responses.  
-- **Prompt Injection**: Pulls Omani phrases from `src/utils/cultural_embeddings.py`  
-- **Example Phrase**: "الصبر مفتاح الفرج"  
-- **Validation**: Ensures cultural alignment.  
-- **Log Reference**: 12:31:14,882
-
----
-
-### 🔊 Text-to-Speech (TTS)
-
-- **File**: `src/api/tts/tts.py`  
-- **Role**: Converts therapy output to audio using Azure SDK.  
-- **Output**: Saves to `src/utils/output_tts.wav`  
-- **Voices**: Supports Omani Arabic  
-- **Log Reference**: 12:31:15,637
-
----
-
-### ⚙️ Utilities
-
-- **Logger**: `src/utils/logger.py`  
-  - Unified logs with timestamp, level (INFO/ERROR) → `pipeline.log`
-- **Monitoring**: `src/utils/monitoring.py`  
-  - Tracks stage latency & success rates; embedded in `app.py`
-- **Voice Capture**: `src/utils/voice_capture.py`  
-  - Converts WebM → WAV
-- **Normalization**: `src/utils/text_normalization.py`  
-  - Standardizes Arabic characters and punctuation
-- **Tokenization**: `src/utils/tokenization.py`  
-  - Placeholder for future preprocessing logic
-
----
-
-## 📦 Deployment
-
-- **Dockerfile**: `infra/docker/Dockerfile`  
-- **Command**:  
-  ```bash
-  docker build -t omani-therapist-voice .
-  docker run -p 5000:5000 omani-therapist-voice
-  ```
-
----
-
-## ⚙️ Technical Specifications
-
-- **Language**: Python 3.9+  
-- **Core Libraries**:  
-  - `Flask`, `transformers`, `langchain-groq`, `pydub`, `azure-cognitiveservices-speech`  
-- **Models**:  
-  - Hugging Face BERT (Arabic)  
-  - Groq LLM  
-- **Target Performance**:  
-  - < 20s latency (end-to-end), tracked via monitoring
-
----
-
-## 🗂️ Project Structure
-
-```text
-OMANI-Therapist-Voice/
+<h2>🗂️ Project Structure</h2>
+<pre class="project-structure"><code>
+OMANI‑Therapist‑Voice/
 ├── src/
-│   ├── agents/       # Emotion, therapy, safety agents
-│   ├── api/          # STT, TTS, main scripts
-│   ├── ui/           # Web interface
-│   └── utils/        # Utilities
-├── data/             # Data files
-├── tests/            # Unit and integration tests
-├── docs/             # Documentation
-├── infra/            # Docker configuration
-├── .env              # Environment vars
-├── requirements.txt  # Dependencies
-└── pipeline.log      # Logs
-```
+│   ├── agents/
+│   ├── api/
+│   ├── ui/
+│   └── utils/
+├── data/
+├── tests/
+├── docs/
+│   └── architecture/overview.html
+├── infra/
+│   └── docker/
+├── .env           (exclude)
+├── requirements.txt
+└── pipeline.log   (exclude)
+</code></pre>
 
----
+<hr>
 
-## 🧪 Implementation Details
+<h2>🛠 Challenges & Fixes</h2>
+<ul>
+  <li><strong>Model Loading Lag:</strong> Preloaded models in <code>emotion_agent.py</code>.</li>
+  <li><strong>TTS Cutoffs:</strong> Debug logs + Azure SDK fix; disabled in crisis.</li>
+  <li><strong>Consent Flow:</strong> Checkbox + 400 error if missing.</li>
+</ul>
 
-- **Integration Testing**:  
-  `tests/integration/test_pipeline.py` with `mock_transcript.txt`  
-- **Unit Testing**:  
-  `tests/unit/test_therapy_agent.py`, `test_emotion_agent.py`, etc.  
-- **Data Source**:  
-  `data/mental_health_phrases.csv`
+<hr>
 
----
+<h2>🚀 Future Considerations</h2>
+<ul>
+  <li>Load balancing for scale.</li>
+  <li>Expand emotion dataset.</li>
+  <li>Implement bias mitigation per <code>bias_mitigation.md</code>.</li>
+</ul>
 
-## 🛠 Challenges & Fixes
+<hr>
 
-- **Model Loading Lag**  
-  → Solved with early preloading in `emotion_agent.py`
-- **TTS Audio Cutoffs**  
-  → Resolved via debug logging and Azure SDK fix
+<h2>🙏 Acknowledgments</h2>
+<ul>
+  <li>Hugging Face</li>
+  <li>Azure Cognitive Services</li>
+  <li>Groq</li>
+</ul>
 
----
+<hr>
 
-## 🚀 Future Considerations
+<h2>📜 Version History</h2>
+<ul>
+  <li><strong>July 11, 2025:</strong> Safety alerts, tokenization, consent flow added.</li>
+  <li><strong>July 12, 2025:</strong> GitHub guidelines, refined overview.</li>
+</ul>
 
-- Add load balancing for multi-user scaling  
-- Retrain `emotion_finetuned` with larger Omani dataset  
-- Implement `tokenization.py` for smarter preprocessing
-
----
-
-## 🙏 Acknowledgments
-
-- 🧠 Hugging Face for transformer-based models  
-- 🔊 Azure Cognitive Services (STT/TTS APIs)  
-- 🤖 Groq for culturally responsive therapy LLM
-
+<p class="footer-note">
+  <strong>Exclude from GitHub:</strong> <code>.env</code>, <code>venv/</code>, <code>pipeline.log</code>, audio outputs, <code>__pycache__</code>.
+</p>
