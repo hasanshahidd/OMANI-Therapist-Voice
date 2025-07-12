@@ -11,8 +11,8 @@ import numpy as np
 setup_logging()
 logger = logging.getLogger(__name__)
 
-MODEL_DIR = r"C:\Users\Admin\Desktop\OMANI-Therapist-Voice\src\agents\emotion\models\arabic_emotion_model"
-FINETUNED_DIR = r"C:\Users\Admin\Desktop\OMANI-Therapist-Voice\src\agents\emotion\models\emotion_finetuned"
+MODEL_DIR = r"C:\Users\Admin\Desktop\OMANI-Therapist-Voice\src\agents\emotion\models\arabic_emotion_model"   #put you data path
+FINETUNED_DIR = r"C:\Users\Admin\Desktop\OMANI-Therapist-Voice\src\agents\emotion\models\emotion_finetuned"   #put you data path
 DATA_PATH = r"C:\Users\Admin\Desktop\OMANI-Therapist-Voice\data\mental_health_phrases_300.xlsx"   #put you data path
 
 
