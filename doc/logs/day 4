@@ -1,0 +1,22 @@
+# Day 4 Log - OMANI-Therapist-Voice
+
+## Introduction
+This log documents the fourth day of development for the OMANI-Therapist-Voice project, focusing on UI integration and pipeline testing. It details the tasks performed, observations made, and plans for finalizing safety features.
+
+## Activities
+### UI Integration
+- **Date**: Day 4 of development
+- **Tasks**:
+  - Developed `src/ui/app.py` with Flask to serve `src/ui/templates/index.html` for audio recording and response playback.
+  - Integrated `src/utils/monitoring.py` to track pipeline stages and metrics.
+
+### Pipeline Testing
+- **Files**: Created `tests/integration/test_pipeline.py` to validate end-to-end flow using `mock_transcript.txt`.
+- **Purpose**: Ensured seamless interaction between STT, emotion detection, and TTS.
+
+## Observations
+- The UI successfully handled audio input and output, with a latency of 12-15s.
+- Pipeline testing revealed a need for safety checks, prompting further development.
+- Monitoring data confirmed stable performance, with logs aiding debugging.
+
+## Project Structure
