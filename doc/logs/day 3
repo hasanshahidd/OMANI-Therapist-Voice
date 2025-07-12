@@ -1,0 +1,21 @@
+# Day 3 Log - OMANI-Therapist-Voice
+
+## Introduction
+This log captures the third day of development for the OMANI-Therapist-Voice project, focusing on emotion model fine-tuning and cultural integration. It details the tasks, observations, and next steps to refine the system’s core capabilities.
+
+## Activities
+### Model Fine-Tuning
+- **Date**: Day 3 of development
+- **Tasks**:
+  - Developed `src/agents/emotion/fine_tune_emotion.py` to fine-tune `models/emotion_finetuned` using `data/mental_health_phrases.csv`.
+  - Integrated `src/utils/text_normalization.py` for Arabic text preprocessing.
+  - Added `src/utils/cultural_embeddings.py` with Omani Arabic prompts (e.g., "الصبر مفتاح الفرج").
+
+### Therapy Agent Development
+- **Files**: Created `src/agents/therapy/therapy_agent.py` using a Groq LLM for CBT-based responses.
+- **Purpose**: Enabled culturally enriched therapy generation tied to emotion detection.
+
+## Observations
+- Fine-tuning improved emotion detection accuracy to 1.00 confidence for key phrases.
+- `cultural_embeddings.py` enhanced response relevance, though dialect coverage was limited.
+- Initial therapy responses in `therapy_agent.py` aligned well with detected emotions.
