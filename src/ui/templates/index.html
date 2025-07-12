@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="UTF-8">
+  <title>OMANI Therapist Voice</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --font-family: {{ "'Noto Sans Arabic', sans-serif" if lang == 'ar' else "'Inter', sans-serif" }};
+      --bg-color: #f4f4f4;
+      --primary: #004c4c;
+      --accent: #00a3a3;
+      --button-text: white;
+    }
+
+    body {
+  margin: 0;
+  font-family: var(--font-family);
+  background-color: var(--bg-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: var(--primary);
+  text-align: center;
+}
+
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    .controls {
+      margin-top: 20px;
+    }
+
+    button {
+      background-color: var(--primary);
+      border: none;
+      color: var(--button-text);
+      padding: 12px 24px;
+      margin: 0 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover:enabled {
+      background-color: var(--accent);
+    }
+
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    audio {
+      margin-top: 30px;
+      width: 80%;
+      max-width: 400px;
+    }
+
+    .alert {
+      color: red;
+      font-weight: bold;
+      margin-top: 20px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>{{ 'المعالج الصوتي العماني' if lang == 'ar' else 'Omani Therapist Voice' }}</h1>
+
+  {% if summary %}
+    <p class="alert">{{ summary }}</p>
+  {% endif %}
+
+  <div style="margin: 20px 0;">
+    <label>
+      <input type="checkbox" id="consent" required>
+      {{ 'أوافق على تسجيل الجلسة' if lang == 'ar' else 'I consent to session recording' }}
+    </label>
+  </div>
+
+  <div class="controls">
+    <button id="start">🎙️ {{ 'ابدأ التسجيل' if lang == 'ar' else 'Start Recording' }}</button>
+    <button id="stop" disabled>⏹️ {{ 'إيقاف' if lang == 'ar' else 'Stop Recording' }}</button>
+  </div>
+
+  <audio id="player" controls style="display:none"></audio>
+
+  <script>
+    let mediaRecorder;
+    let audioChunks = [];
+
+    document.getElementById("start").onclick = async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.start();
+      audioChunks = [];
+
+      mediaRecorder.ondataavailable = event => {
+        if (event.data.size > 0) audioChunks.push(event.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+        const formData = new FormData();
+        formData.append("audio", audioBlob, "recording.webm");
+
+        const consentGiven = document.getElementById("consent").checked ? "yes" : "no";
+        formData.append("consent", consentGiven);
+
+        try {
+          const response = await fetch("/", {
+            method: "POST",
+            body: formData
+          });
+
+          const contentType = response.headers.get("content-type") || "";
+
+          if (contentType.includes("audio/wav")) {
+            const blob = await response.blob();
+            const audioURL = URL.createObjectURL(blob);
+            const player = document.getElementById("player");
+            player.src = audioURL;
+            player.style.display = "block";
+            player.play();
+          } else if (contentType.includes("text/html")) {
+            const html = await response.text();
+            document.open();
+            document.write(html);
+            document.close();
+          } else {
+            alert("⚠️ Unexpected response from server.");
+          }
+        } catch (error) {
+          console.error("Playback failed:", error);
+          alert("❌ Server error. Please try again.");
+        }
+
+        document.getElementById("start").disabled = false;
+        document.getElementById("stop").disabled = true;
+      };
+
+      document.getElementById("start").disabled = true;
+      document.getElementById("stop").disabled = false;
+    };
+
+    document.getElementById("stop").onclick = () => {
+      mediaRecorder.stop();
+      document.getElementById("start").disabled = false;
+      document.getElementById("stop").disabled = true;
+    };
+  </script>
+</body>
+</html>
