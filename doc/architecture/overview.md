@@ -69,11 +69,13 @@
 <h3>💬 Therapy Generation</h3>
 <ul>
   <li><strong>File:</strong> <code>src/agents/therapy/therapy_agent.py</code></li>
-  <li><strong>LLM:</strong> Groq for CBT‑style responses.</li>
-  <li><strong>Prompts:</strong> Omani phrases from <code>src/utils/cultural_embeddings.py</code> (“الصبر مفتاح الفرج”).</li>
-  <li><strong>Validation:</strong> Ensures cultural alignment.</li>
-  <li><strong>Log Ref.:</strong> 12:31:14,882</li>
+  <li><strong>LLM Backend:</strong> Uses <code>Groq-hosted Mixtral</code> for generating culturally appropriate CBT-style responses.</li>
+  <li><strong>Prompt Logic:</strong> Dynamically injects Omani Arabic idioms from <code>src/utils/cultural_embeddings.py</code> (e.g., “الصبر مفتاح الفرج”) to ensure relevance and trust-building.</li>
+  <li><strong>Dual-Model Strategy:</strong> Prompt chaining and response validation emulate GPT-4o + Claude Opus 4 behavior under API constraints.</li>
+  <li><strong>Validation:</strong> Ensures responses align with Islamic values, therapeutic tone, and dialect sensitivity.</li>
+  <li><strong>Log Reference:</strong> 12:31:14,882</li>
 </ul>
+
 
 <h3>🔊 Text‑to‑Speech (TTS)</h3>
 <ul>
