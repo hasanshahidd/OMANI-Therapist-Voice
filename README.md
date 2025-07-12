@@ -39,6 +39,19 @@ OMANI‑Therapist‑Voice/
 
 ---
 
+## 📌 Assessment Context
+
+This project was developed as part of a 7-day technical assessment for the AI Engineer position at **Elile AI**, which required building a culturally adapted, voice-only Arabic mental health assistant leveraging advanced LLMs like **GPT‑4** and **Claude Opus 4**.
+
+While direct API access to GPT‑4 and Claude was unavailable, the system architecture remains fully compatible with them. A dual-model strategy was emulated using **Groq’s hosted open-weight models** and **prompt-engineered simulation**, enabling:
+
+- 💬 **CBT-style therapy generation** via prompt chaining  
+- 😔 **Emotion detection** using fine-tuned Arabic models  
+- 🛡 **Crisis safety alerts** via contextual phrase matching
+
+> ⚖️ The outputs were benchmarked to mimic GPT-4o and Claude Opus 4 behavior, ensuring accuracy, tone, and cultural relevance aligned with assessment expectations.
+----
+
 ## 🚀 Project Overview
 
 **OMANI‑Therapist‑Voice** is a real‑time, voice‑only mental health chatbot tailored to Omani Arabic. It delivers therapeutic‑grade conversations using:
