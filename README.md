@@ -43,7 +43,7 @@ OMANI‑Therapist‑Voice/
 
 This project was developed as part of a 7-day technical assessment for the AI Engineer position at **Elile AI**, which required building a culturally adapted, voice-only Arabic mental health assistant leveraging advanced LLMs like **GPT‑4** and **Claude Opus 4**.
 
-While direct API access to GPT‑4 and Claude was unavailable, the system architecture remains fully compatible with them. A dual-model strategy was emulated using **Groq’s hosted open-weight models** and **prompt-engineered simulation**, enabling:
+While direct API access to GPT‑4 and Claude was unavailable,⚠️ Note: Dual-model simulation was implemented using Groq’s open-weight models with fallback templates, maintaining response structure, cultural tone, and safety protocols compatible with GPT-4o and Claude Opus 4 guidelines.the system architecture remains fully compatible with them. A dual-model strategy was emulated using **Groq’s hosted open-weight models** and **prompt-engineered simulation**, enabling:
 
 - 💬 **CBT-style therapy generation** via prompt chaining  
 - 😔 **Emotion detection** using fine-tuned Arabic models  
@@ -59,7 +59,7 @@ While direct API access to GPT‑4 and Claude was unavailable, the system archit
 1. **Speech Processing Pipeline**
 2. **Emotion Detection**
 3. **Safety Assessment**
-4. **Dual‑Model Response Generation**
+4. **Dual‑Model Response Generation (Simulated via Groq + Prompt Validation)**
 5. **Cultural Adaptation**
 6. **Natural TTS Output**
 
@@ -101,7 +101,7 @@ Docker‑Based Isolation:
 
     * `safety_agent.py` — assesses transcript risk
   * **`therapy/`**:
-    Groq LLM integration for CBT‑style responses.
+  Implements dual-model logic using Groq + fallback validation; compatible with GPT‑4o/Claude APIs.
 
     * `therapy_agent.py` — generates and validates replies
 
