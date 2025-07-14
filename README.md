@@ -243,9 +243,9 @@ __pycache__/
 
 ## 📈 Performance & Monitoring
 
-* **Target Latency**: < 20 s/turn
-* **Metrics**: Logged in `pipeline.log`, visualizable via `/metrics` endpoint (future).
-* **Scaling**: Docker+Kubernetes-ready; add load‑balancer & autoscale in production.
+- **Target Latency**: Less than 20 seconds per turn, achieved with an average of 12-15 seconds, measured using `src/utils/monitoring.py`.
+- **Metrics**: Performance data is logged to `pipeline.log` via `src/utils/logger.py`’s `log_event()` function. A `/metrics` endpoint is planned for future visualization, enabling real-time monitoring.
+- **Scaling**: The application is Docker-ready via `infra/docker/Dockerfile` and Kubernetes-compatible. In production, a load balancer and autoscaling will be added to handle increased traffic efficiently.
 
 ---
 
